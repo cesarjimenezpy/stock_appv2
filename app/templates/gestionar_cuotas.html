@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Listado de Ventas
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestionar Cuotas de Venta</h2>
+     <!-- Información de la Venta -->
+    <div class="mb-4 border p-3 bg-light">
+        <h4>Detalles de la Venta</h4>
+        <p><strong>Producto:</strong> {{ venta.producto.descripcion }}</p>
+        <p><strong>Cliente:</strong> {{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</p>
+        <p><strong>Código Interno:</strong> {{ venta.codigo_interno }}</p>
+        <p><strong>Fecha de Venta:</strong> {{ venta.fecha.strftime('%d/%m/%Y') }}</p>
+    </div>
+     <!-- Resumen de cuotas -->
+     <div class="mb-4">
+        <p><strong>Total de Cuotas Pendientes:</strong> <span id="total_cuotas_pendientes">0</span></p>
+        <p><strong>Saldo Pendiente:</strong> <span id="saldo_pendiente">0</span></p>
+    </div>
+    <form method="POST">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nro Pagaré</th>
+                    <th>Importe</th>
+                    <th>Vencimiento</th>
+                    <th>Fecha de Cancelación</th>
+                    <th>Tipo de Pago</th>
+                    <th>Pagada</th>
+                    
+                </tr>
+            </thead>
+            <tbody id="cuotas_tbody">
+                {% for cuota in venta.cuotas %}
+                <tr>
+                    <td> {{cuota.numero_pagare}}</td>
+                    <td class="importe">{{ cuota.importe|format_currency }}</td>
+                    <td>{{ cuota.fecha_vencimiento.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if not cuota.pagado %}
+                            <input type="date" class="form-control" name="fecha_cancelacion_{{ cuota.id }}">
+                        {% else %}
+                            {{ cuota.fecha_pago.strftime('%d/%m/%Y') }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not cuota.pagado %}
+                            <select name="tipo_pago_{{ cuota.id }}" class="form-control">
+                                <option value="">Seleccione...</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        {% else %}
+                            {{ cuota.tipo_pago }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cuota.pagado %}
+                            Sí
+                        {% else %}
+                            No
+                        {% endif %}
+                    </td>
+                    
+                    <input type="hidden" class="cuota_id" name="cuota_id" value="{{ cuota.id }}">
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Actualizar Cuotas</button>
+    </form>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+                $('form').on('submit', function(event) {
+            let valid = true;
+
+            $('#cuotas_tbody tr').each(function() {
+                let fecha_cancelacion = $(this).find('input[type="date"]').val();
+                let tipo_pago = $(this).find('select').val();
+
+                if (fecha_cancelacion && !tipo_pago) {
+                    alert('Debe seleccionar un tipo de pago.');
+                    valid = false;
+                    return false;
+                }
+            });
+
+            if (!valid) {
+                event.preventDefault();
+            }
+        });
+        function actualizarResumen() {
+            var totalCuotasPendientes = 0;
+            var saldoPendiente = 0;
+
+            $('#cuotas_tbody tr').each(function() {
+                var importeTexto = $(this).find('td.importe').text().replace(/[^0-9.-]+/g, "");
+                var importe = parseFloat(importeTexto);
+                var pagada = $(this).find('td:nth-child(6)').text().trim() === 'No';
+                
+                if (pagada) {
+                    totalCuotasPendientes += 1;
+                    saldoPendiente += importe;
+                }
+            });
+
+            $('#total_cuotas_pendientes').text(totalCuotasPendientes);
+            $('#saldo_pendiente').text(saldoPendiente.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        }
+
+        // Inicializa el resumen al cargar la página
+        actualizarResumen();
+    });
+</script>
+{% endblock %}

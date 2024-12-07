@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Registrar Venta
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2>{{ 'Editar Producto' if producto else 'Nuevo Producto' }}</h2>
+        <form method="post">
+            <!-- Campo oculto para ID del producto -->
+            {% if producto %}
+                <input type="hidden" name="producto_id" value="{{ producto.id }}">
+            {% endif %}
+            <div class="form-group">
+                <label for="numero_chasis">Chasis:</label>
+                <input type="text" id="numero_chasis" name="numero_chasis" class="form-control" required
+                       value="{{ producto.numero_chasis if producto else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="marca">Marca:</label>
+                <select id="marca" name="marca_id" class="form-control">
+                    {% for marca in marcas %}
+                    <option value="{{ marca.id }}" {{ 'selected' if producto and producto.marca_id == marca.id else '' }}>{{ marca.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-primary mt-2" id="nueva_marca">Agregar Nueva Marca</button>
+            </div>
+
+            <div class="form-group">
+                <label for="modelo">Modelo:</label>
+                <select id="modelo" name="modelo_id" class="form-control">
+                    {% for modelo in modelos %}
+                    <option value="{{ modelo.id }}" {{ 'selected' if producto and producto.modelo_id == modelo.id else '' }}>{{ modelo.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-primary mt-2" id="nuevo_modelo">Agregar Nuevo Modelo</button>
+            </div>
+
+            <div class="form-group">
+                <label for="año_fabricacion">Año de Fabricación:</label>
+                <input type="number" id="año_fabricacion" name="año_fabricacion" class="form-control" required
+                       value="{{ producto.año_fabricacion if producto else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="color">Color:</label>
+                <input type="text" id="color" name="color" class="form-control" required
+                       value="{{ producto.color if producto else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="ubicacion">Ubicación:</label>
+                <select id="ubicacion" name="ubicacion" class="form-control" required>
+                    <option value="PLAYA" {{ 'selected' if producto and producto.ubicacion == 'PLAYA' else '' }}>Playa</option>
+                    <option value="CAMBIO DE VOLANTE" {{ 'selected' if producto and producto.ubicacion == 'CAMBIO DE VOLANTE' else '' }}>Cambio de Volante</option>
+                    <option value="VENDIDO" {{ 'selected' if producto and producto.ubicacion == 'VENDIDO' else '' }}>Vendido</option>
+                    <option value="TALLER" {{ 'selected' if producto and producto.ubicacion == 'TALLER' else '' }}>Taller</option>
+                    <option value="SEÑADO" {{ 'selected' if producto and producto.ubicacion == 'SEÑADO' else '' }}>Señado</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="precio_venta">Precio de Venta:</label>
+                <input type="number" step="0.01" id="precio_venta" name="precio_venta" class="form-control" required
+                       value="{{ producto.precio_venta if producto else '' }}">
+            </div>
+
+            <h4>Detalles de Gastos</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="gastos">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Monto</th>
+                            <th>Moneda</th>
+                            <th>Tasa de Cambio (si aplica)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if producto and producto.gastos %}
+                            {% for gasto in producto.gastos %}
+                                <tr class="gasto">
+                                    <td><input type="text" name="descripcion[]" class="form-control" value="{{ gasto.descripcion }}" required></td>
+                                    <td><input type="number" step="0.01" name="monto[]" class="form-control monto" value="{{ gasto.monto }}" required></td>
+                                    <td>
+                                        <select name="moneda[]" class="form-control moneda">
+                                            <option value="PYG" {{ 'selected' if gasto.moneda == 'PYG' else '' }}>Guaraníes</option>
+                                            <option value="USD" {{ 'selected' if gasto.moneda == 'USD' else '' }}>Dólares</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" step="0.01" name="tasa_cambio[]" class="form-control tasa_cambio" 
+                                        value="{{ gasto.tasa_cambio if gasto.moneda == 'USD' else '1' }}" 
+                                        {{ 'readonly' if gasto.moneda == 'PYG' else '' }}>
+                                    </td>
+                                    <td><button type="button" class="btn btn-danger eliminar">Eliminar</button></td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr class="gasto">
+                            <td><input type="text" name="descripcion[]" class="form-control" required></td>
+                            <td><input type="number" step="0.01" name="monto[]" class="form-control monto" required></td>
+                            <td>
+                                <select name="moneda[]" class="form-control moneda">
+                                    <option value="PYG">Guaraníes</option>
+                                    <option value="USD">Dólares</option>
+                                </select>
+                            </td>
+                            <td><input type="number" step="0.01" name="tasa_cambio[]" class="form-control tasa_cambio" required></td>
+                            <td><button type="button" class="btn btn-danger eliminar">Eliminar</button></td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" id="agregar_gasto">Agregar Gasto</button>
+
+            <div class="form-group">
+                <label for="costo_total">Costo Total:</label>
+                <input type="text" id="costo_total" name="costo_total" class="form-control" readonly>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{ 'Actualizar' if producto else 'Registrar' }} Producto</button>
+        </form>
+    </div>
+
+    <script>
+        let total = 0;
+
+        function formatNumber(number) {
+            return number.toLocaleString('es-PY');
+        }
+        
+        function updateTotal() {
+            total = 0;
+            document.querySelectorAll('#gastos tbody tr').forEach(row => {
+                const monto = parseFloat(row.querySelector('.monto').value) || 0;
+                const moneda = row.querySelector('.moneda').value;
+                const tasaCambio = parseFloat(row.querySelector('.tasa_cambio').value) || 1;
+
+                if (moneda === 'USD') {
+                    total += monto * tasaCambio;
+                } else {
+                    total += monto;
+                }
+            });
+            document.getElementById('costo_total').value = formatNumber(Math.round(total));
+        }
+
+        document.getElementById('agregar_gasto').addEventListener('click', function() {
+            const index = document.querySelectorAll('#gastos tbody tr').length;
+            const html = `
+                <tr class="gasto">
+                    <td><input type="text" name="descripcion[]" class="form-control" required></td>
+                    <td><input type="number" step="0.01" name="monto[]" class="form-control monto" required></td>
+                    <td>
+                        <select name="moneda[]" class="form-control moneda">
+                            <option value="PYG">Guaraníes</option>
+                            <option value="USD">Dólares</option>
+                        </select>
+                    </td>
+                    <td><input type="number" step="0.01" name="tasa_cambio[]" class="form-control tasa_cambio" required></td>
+                    <td><button type="button" class="btn btn-danger eliminar">Eliminar</button></td>
+                </tr>
+            `;
+            document.querySelector('#gastos tbody').insertAdjacentHTML('beforeend', html);
+        });
+
+        document.getElementById('gastos').addEventListener('input', function(event) {
+            if (event.target.classList.contains('monto') || event.target.classList.contains('tasa_cambio')) {
+                updateTotal();
+            }
+        });
+
+        document.getElementById('gastos').addEventListener('change', function(event) {
+            if (event.target.classList.contains('moneda')) {
+                const row = event.target.closest('tr');
+                const tasaCambioField = row.querySelector('.tasa_cambio');
+                // tasaCambioField.disabled = event.target.value === 'PYG';
+                if (event.target.value === 'USD') {
+                    tasaCambioField.value = '';
+                }
+                if (event.target.value === 'PYG') {
+                    tasaCambioField.value = '1';  // Asignar 1 si es Guaraníes
+                }
+                updateTotal();
+            }
+        });
+
+        document.getElementById('gastos').addEventListener('click', function(event) {
+            if (event.target.classList.contains('eliminar')) {
+                event.target.closest('tr').remove();
+                updateTotal();
+            }
+        });
+
+        document.getElementById('nueva_marca').addEventListener('click', function() {
+            const nombre = prompt('Ingrese el nombre de la nueva marca:');
+            if (nombre) {
+                fetch('/marca/nueva', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `nombre=${encodeURIComponent(nombre)}`,
+                }).then(function(response) {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al agregar la marca.');
+                    }
+                });
+            }
+        });
+
+        document.getElementById('nuevo_modelo').addEventListener('click', function() {
+            const nombre = prompt('Ingrese el nombre del nuevo modelo:');
+            const marca_id = document.getElementById('marca').value;
+            if (nombre && marca_id) {
+                fetch('/modelo/nuevo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `nombre=${encodeURIComponent(nombre)}&marca_id=${encodeURIComponent(marca_id)}`,
+                }).then(function(response) {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al agregar el modelo.');
+                    }
+                });
+            }
+        });
+        // Llama a updateTotal() al cargar el formulario
+        document.addEventListener('DOMContentLoaded', updateTotal);
+    </script>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Inicio
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div id="mensaje" class="alert d-none" role="alert"></div>
+        
+        <h2 class="mt-5 text-black">Lista de Productos</h2>
+        
+        <!-- Filtros de búsqueda -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <input type="text" id="filtro_chasis" class="form-control" placeholder="Filtrar por Chasis" style="border-color: #ff4e50;">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filtro_marca" class="form-control" placeholder="Filtrar por Marca" style="border-color: #ff4e50;">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filtro_modelo" class="form-control" placeholder="Filtrar por Modelo" style="border-color: #ff4e50;">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filtro_color" class="form-control" placeholder="Filtrar por Color" style="border-color: #ff4e50;">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <select id="filtro_ubicacion" class="form-control" style="border-color: #ff4e50;">
+                    <option value="PLAYA" selected>PLAYA</option>
+                    <option value="VENDIDO">VENDIDO</option>
+                    <option value="CAMBIO DE VOLANTE">DEPOSITO</option>
+                    <option value="TALLER">DEPOSITO</option>
+                    <option value="">Todos</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tabla de productos -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" style="border-color: #ff4e50;">
+                <thead style="background-color: #ff4e50; color: white;">
+                    <tr>
+                        <th>Número de Chasis</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año de Fabricación</th>
+                        <th>Color</th>
+                        <th>Costo Total</th>
+                        <th>Precio de Venta</th>
+                        <th>Ubicación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productos_tbody">
+                    {% if productos %}
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.numero_chasis }}</td>
+                            <td>{{ producto.marca.nombre if producto.marca else 'N/A' }}</td>
+                            <td>{{ producto.modelo.nombre if producto.modelo else 'N/A' }}</td>
+                            <td>{{ producto.año_fabricacion }}</td>
+                            <td>{{ producto.color }}</td>
+                            <td>{{ producto.calcular_costo()|format_currency }}</td>
+                            <td>{{ producto.precio_venta|format_currency }}</td>
+                            <td>{{ producto.ubicacion }}</td>
+                            <td>
+                                <a href="{{ url_for('editar_producto', producto_id=producto.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                <form action="{{ url_for('eliminar_producto', producto_id=producto.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center text-white">No hay productos registrados.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+                <tfoot style="background-color: #f9d423;">
+                    <tr>
+                        <th colspan="6" class="text-right">Totales:</th>
+                        <th id="total_costo">0</th>
+                        <th id="total_precio_venta">0</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"  crossorigin="anonymous"></script>
+
+    <script>
+        function eliminarProducto(productoId) {
+            fetch(`/producto/eliminar/${productoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const mensaje = document.getElementById('mensaje');
+                if (data.success) {
+                    mensaje.className = 'alert alert-success';
+                    mensaje.innerText = 'Producto eliminado correctamente.';
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    mensaje.className = 'alert alert-danger';
+                    mensaje.innerText = data.error;
+                }
+                mensaje.classList.remove('d-none');
+            })
+            .catch(error => {
+                const mensaje = document.getElementById('mensaje');
+                mensaje.className = 'alert alert-danger';
+                mensaje.innerText = 'Error en la eliminación del producto.';
+                mensaje.classList.remove('d-none');
+            });
+        }
+
+        $(document).ready(function () {
+            function filtrarTabla() {
+                var filtroChasis = $('#filtro_chasis').val().toLowerCase();
+                var filtroMarca = $('#filtro_marca').val().toLowerCase();
+                var filtroModelo = $('#filtro_modelo').val().toLowerCase();
+                var filtroColor = $('#filtro_color').val().toLowerCase();
+
+                console.log('Filtros aplicados:', {
+                    chasis: filtroChasis,
+                    marca: filtroMarca,
+                    modelo: filtroModelo,
+                    color: filtroColor
+                });
+
+                var totalCosto = 0;
+                var totalPrecioVenta = 0;
+
+                $('#productos_tbody tr').each(function () {
+                    var chasis = $(this).find('td:nth-child(1)').text().toLowerCase();
+                    var marca = $(this).find('td:nth-child(2)').text().toLowerCase();
+                    var modelo = $(this).find('td:nth-child(3)').text().toLowerCase();
+                    var color = $(this).find('td:nth-child(5)').text().toLowerCase();
+
+                    console.log('Datos de fila:', {
+                        chasis: chasis,
+                        marca: marca,
+                        modelo: modelo,
+                        color: color
+                    });
+
+                    var match = chasis.indexOf(filtroChasis) > -1 &&
+                                marca.indexOf(filtroMarca) > -1 &&
+                                modelo.indexOf(filtroModelo) > -1 &&
+                                color.indexOf(filtroColor) > -1;
+
+                    $(this).toggle(match);
+
+                    if (match) {
+                        var costo = parseFloat($(this).find('td:nth-child(6)').text().replace(/[^0-9.-]+/g, "")) || 0;
+                        var precioVenta = parseFloat($(this).find('td:nth-child(7)').text().replace(/[^0-9.-]+/g, "")) || 0;
+                        totalCosto += costo;
+                        totalPrecioVenta += precioVenta;
+                    }
+                });
+
+                $('#total_costo').text(totalCosto.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                $('#total_precio_venta').text(totalPrecioVenta.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+                console.log('Totales calculados:', {
+                    costo: totalCosto,
+                    precioVenta: totalPrecioVenta
+                });
+            }
+
+            $('#filtro_chasis, #filtro_marca, #filtro_modelo, #filtro_color').on('keyup', filtrarTabla);
+
+            // Inicializa el filtrado al cargar la página
+            filtrarTabla();
+        });
+    </script>
+{% endblock %}

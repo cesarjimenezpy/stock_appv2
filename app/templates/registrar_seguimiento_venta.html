@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Registrar Seguimiento de Venta
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Registrar Seguimiento de Venta</h2>
+    <form id="formSeguimientoVenta" method="POST" action="{{ url_for('registrar_seguimiento_venta', cliente_id=cliente.id) }}">
+        <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" class="form-control" id="fecha" name="fecha"  required>
+        </div>
+        <div class="form-group">
+            <label for="fecha_proximo_contacto">Fecha de Próximo Contacto</label>
+            <input type="date" class="form-control" id="fecha_proximo_contacto" name="fecha_proximo_contacto">
+        </div>
+        <div class="form-group">
+            <label for="detalle">Detalle</label>
+            <textarea class="form-control" id="detalle" name="detalle" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar Seguimiento</button>
+    </form>
+</div>
+{% endblock %}
+

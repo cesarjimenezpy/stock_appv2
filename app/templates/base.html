@@ -1,0 +1,140 @@
+{% if current_user.is_authenticated %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Inicio{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Fondo claro */
+        }
+
+        /* Estilo de la barra de navegación */
+        .navbar {
+            background-color: #b22222; /* Rojo oscuro */
+        }
+
+        .navbar-brand, .navbar-nav .nav-link {
+            color: #fff !important;
+        }
+
+        /* Estilo del contenedor principal */
+        .container {
+            background-color: #ffffff; /* Fondo blanco para el contenido */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #b22222; /* Rojo oscuro */
+        }
+
+        .btn-primary {
+            background-color: #b22222;
+            border-color: #b22222;
+        }
+
+        .btn-secondary {
+            background-color: #8b0000;
+            border-color: #8b0000;
+        }
+
+        #logo {
+            width: 150px; /* Mantener el tamaño del logo */
+            height: auto;
+            margin-bottom: 20px; /* Espacio debajo del logo */
+        }
+
+        /* Ajustar los botones para que no se desborden */
+        .navbar-nav {
+            flex-direction: row;
+        }
+
+        .nav-item {
+            margin-left: 10px; /* Espacio entre los ítems de navegación */
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" id="logo">
+            beAI - System
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('nuevo_producto') }}">Agregar Nuevo Producto</a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('consultar_ventas') }}">Consultar Ventas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('consultar_cuotas') }}">Consultar Cuotas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('consultar_ventas') }}">Consultar Ventas</a>
+                </li> -->
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('consultar_seguimientos_venta') }}">Consultar Seguimientos de Venta</a>
+                </li> -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('gestionar_cliente') }}">Clientes</a>
+                </li>
+                 <!-- Menú desplegable de Listados -->
+                 <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Listados
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{ url_for('consultar_ventas') }}">Listado de Ventas</a>
+                        <a class="dropdown-item" href="{{ url_for('consultar_cuotas') }}">Listado de Cuota</a>
+                        <a class="dropdown-item" href="{{ url_for('consultar_seguimientos_venta') }}">Listado de Seguimientos de Ventas</a>
+                        
+                    </div>
+                </li>
+                <!-- Menú desplegable de Caja -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Caja
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{ url_for('cash_flow') }}">Flujo de Caja</a>
+                        <a class="dropdown-item" href="{{ url_for('manage_concepts') }}">Conceptos</a>
+                        <a class="dropdown-item" href="{{ url_for('register_income') }}">Ingresos</a>
+                        <a class="dropdown-item" href="{{ url_for('register_expense') }}">Egresos</a>
+                    </div>
+                </li>
+                <!-- Agregar opción de cerrar sesión -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Cerrar sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Scripts de Bootstrap -->
+    <!-- En tu base.html -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    {% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+    </li>
+    {% endif %}
+</body>
+</html>

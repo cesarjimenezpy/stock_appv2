@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Inicio
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <!-- <h1>Auto Ofertas - System</h1>
+        <div class="mt-4">
+            <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">Agregar Nuevo Producto</a>
+            <a href="{{ url_for('nueva_venta') }}" class="btn btn-secondary">Registrar Venta</a>
+            <a href="{{ url_for('consultar_ventas') }}" class="btn btn-secondary">Consultar Ventas</a>
+            <a href="{{ url_for('consultar_cuotas') }}" class="btn btn-secondary">Registrar Pago</a>
+            <a href="{{ url_for('gestionar_cliente') }}" class="btn btn-secondary">Clientes</a>
+            <a href="{{ url_for('nueva_marca') }}" class="btn btn-info">Agregar Nueva Marca</a>
+            <a href="{{ url_for('nuevo_modelo') }}" class="btn btn-warning">Agregar Nuevo Modelo</a> 
+         --> 
+        <div id="mensaje" class="alert d-none" role="alert"></div>
+        <h2 class="mt-5">Lista de Productos</h2>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <input type="text" id="filtro_chasis" class="form-control" placeholder="Filtrar por Chasis">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filtro_marca" class="form-control" placeholder="Filtrar por Marca">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filtro_modelo" class="form-control" placeholder="Filtrar por Modelo">
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filtro_color" class="form-control" placeholder="Filtrar por Color">
+            </div>
+        </div>
+        <!-- Exportar datos -->
+    <!-- <div class="mb-3">
+        <form action="{{ url_for('exportar_datos') }}" method="post">
+            <div class="form-group">
+                <label for="formato">Selecciona el formato de exportación:</label>
+                <select id="formato" name="formato" class="form-control">
+                    <option value="xls">Excel (.xls)</option>
+                    <option value="ods">OpenDocument Spreadsheet (.ods)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Exportar Datos</button>
+        </form>
+    </div> -->
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Número de Chasis</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año de Fabricación</th>
+                        <th>Color</th>
+                        <th>Costo Total</th>
+                        <th>Precio de Venta</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productos_tbody">
+                    {% if productos %}
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.numero_chasis }}</td>
+                            <td>{{ producto.marca.nombre if producto.marca else 'N/A' }}</td>
+                            <td>{{ producto.modelo.nombre if producto.modelo else 'N/A' }}</td>
+                            <!-- <td>{{ producto.marca_id  }}</td>
+                            <td>{{ producto.modelo_id }}</td> -->
+                            <td>{{ producto.año_fabricacion }}</td>
+                            <td>{{ producto.color }}</td>
+                            <td>{{ producto.calcular_costo()| format_currency }}</td>
+                            <td>{{ producto.precio_venta | format_currency }}</td>
+                            <td>
+                                <a href="{{ url_for('editar_producto', producto_id=producto.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                <form action="{{ url_for('eliminar_producto', producto_id=producto.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                </form>
+                                
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">No hay productos registrados.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="5" class="text-right">Totales:</th>
+                        <th id="total_costo">0</th>
+                        <th id="total_precio_venta">0</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <script>
+        function eliminarProducto(productoId) {
+            fetch(`/producto/eliminar/${productoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const mensaje = document.getElementById('mensaje');
+                if (data.success) {
+                    mensaje.className = 'alert alert-success';
+                    mensaje.innerText = 'Producto eliminado correctamente.';
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    mensaje.className = 'alert alert-danger';
+                    mensaje.innerText = data.error;
+                }
+                mensaje.classList.remove('d-none');
+            })
+            .catch(error => {
+                const mensaje = document.getElementById('mensaje');
+                mensaje.className = 'alert alert-danger';
+                mensaje.innerText = 'Error en la eliminación del producto.';
+                mensaje.classList.remove('d-none');
+            });
+        }
+        $(document).ready(function () {
+            function filtrarTabla() {
+                var filtroChasis = $('#filtro_chasis').val().toLowerCase();
+                var filtroMarca = $('#filtro_marca').val().toLowerCase();
+                var filtroModelo = $('#filtro_modelo').val().toLowerCase();
+                var filtroColor = $('#filtro_color').val().toLowerCase();
+
+                var totalCosto = 0;
+                var totalPrecioVenta = 0;
+
+                $('#productos_tbody tr').filter(function () {
+                    $(this).toggle(
+                        $(this).find('td:nth-child(1)').text().toLowerCase().indexOf(filtroChasis) > -1 &&
+                        $(this).find('td:nth-child(2)').text().toLowerCase().indexOf(filtroMarca) > -1 &&
+                        $(this).find('td:nth-child(3)').text().toLowerCase().indexOf(filtroModelo) > -1 &&
+                        $(this).find('td:nth-child(5)').text().toLowerCase().indexOf(filtroColor) > -1
+                    );
+
+                    if ($(this).is(':visible')) {
+                        totalCosto += parseFloat($(this).find('td:nth-child(6)').text().replace(/[^0-9.-]+/g, ""));
+                        totalPrecioVenta += parseFloat($(this).find('td:nth-child(7)').text().replace(/[^0-9.-]+/g, ""));
+                    }
+                });
+
+                $('#total_costo').text(totalCosto.toLocaleString('es-ES'));
+                $('#total_precio_venta').text(totalPrecioVenta.toLocaleString('es-ES'));
+            }
+
+            $('#filtro_chasis, #filtro_marca, #filtro_modelo, #filtro_color').on('keyup', filtrarTabla);
+
+            filtrarTabla();
+        });
+    </script>
+{% endblock %}

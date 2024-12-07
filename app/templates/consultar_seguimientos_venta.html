@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Consultar Seguimientos de Venta
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Seguimientos de Venta del Mes Actual</h2>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Detalle</th>
+                <th>Fecha de Próximo Contacto</th>
+                <th>Cliente</th>
+                <th>Número de Teléfono</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for seguimiento in seguimientos %}
+            <tr>
+                <td>{{ seguimiento.fecha }}</td>
+                <td>{{ seguimiento.detalle }}</td>
+                <td>{{ seguimiento.fecha_proximo_contacto }}</td>
+                <td>{{ seguimiento.cliente.nombre }} {{ seguimiento.cliente.apellido }}</td>
+                <td>{{ seguimiento.cliente.telefono }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center">No se encontraron seguimientos para este mes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

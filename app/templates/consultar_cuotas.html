@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Listado de Cuotas
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Listado de Cuotas</h2>
+    
+    <!-- Formulario de filtros -->
+    <form id="filter-form" class="mb-4">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="fecha_inicio">Fecha Inicio</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="fecha_fin">Fecha Fin</label>
+                <input type="date" id="fecha_fin" name="fecha_fin" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="cuotas_vencidas" name="cuotas_vencidas">
+                    <label class="form-check-label" for="cuotas_vencidas">Solo Cuotas Vencidas</label>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">Filtrar</button>
+            </div>
+        </div>
+    </form>
+    
+    <table class="table table-striped table-bordered" id="cuotas-table">
+        <thead class="thead-dark">
+            <tr>
+                <th>Código Interno</th>
+                <th>Nombre del Cliente</th>
+                <th>Fecha de Venta</th>
+                <th>Importe Total</th>
+                <th>Importe de la Cuota</th>
+                <th>Fecha de Vencimiento</th>
+                <th>Fecha de Pago</th>
+                <th>Días de Atraso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set total_importe_cuotas = 0 %}
+            {% set total_registros = 0 %}
+            {% for cuota in cuotas %}
+            <tr>
+                <td>{{ cuota.venta.codigo_interno }}</td>
+                <td>
+                    <a href="{{ url_for('gestionar_cliente', cliente_id=cuota.venta.cliente.id) }}">
+                        {{ cuota.venta.cliente.nombre }} {{ cuota.venta.cliente.apellido }}
+                    </a>
+                </td>
+                
+                <td>{{ cuota.venta.fecha.strftime('%Y-%m-%d') }}</td>
+                <td>{{ cuota.venta.total|format_currency }}</td>
+                <td>{{ cuota.importe|format_currency }}</td>
+                <td>{{ cuota.fecha_vencimiento.strftime('%Y-%m-%d') }}</td>
+                <td>{{ cuota.fecha_pago.strftime('%Y-%m-%d') if cuota.fecha_pago else 'No Pagada' }}</td>
+                <td>
+                    {% if not cuota.fecha_pago and cuota.fecha_vencimiento < current_time %}
+                        {{ (current_time - cuota.fecha_vencimiento).days }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </td>
+            </tr>
+            {% set total_importe_cuotas = total_importe_cuotas + limpiar_valor(cuota.importe) %}
+            {% set total_registros = total_registros + 1 %}
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="4" class="text-right">Total Importe Cuotas:</th>
+                <th>{{ total_importe_cuotas|format_currency }}</th>
+                <th colspan="3">Total Registros: {{ total_registros }}</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+<script>
+    function applyFilters() {
+        var fechaInicio = document.getElementById('fecha_inicio').value;
+        var fechaFin = document.getElementById('fecha_fin').value;
+        var cuotasVencidas = document.getElementById('cuotas_vencidas').checked;
+        var table = document.getElementById('cuotas-table');
+        var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        var totalImporteCuotas = 0;
+        var totalRegistros = 5;
+        
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var cells = row.getElementsByTagName('td');
+            var rowFechaVencimiento = cells[5].innerText;
+            var rowFechaPago = cells[6].innerText;
+            var importeCuota = parseFloat(cells[4].innerText.replace(/[^\d.-]/g, ''));
+            
+            var match = true;
+
+            // Filtro de fechas
+            if (fechaInicio && rowFechaVencimiento < fechaInicio) {
+                match = false;
+            }
+            if (fechaFin && rowFechaVencimiento > fechaFin) {
+                match = false;
+            }
+
+            // Filtro de cuotas vencidas
+            if (cuotasVencidas && rowFechaPago !== 'No Pagada') {
+                match = false;
+            }
+
+            if (match) {
+                row.style.display = '';
+                totalImporteCuotas += importeCuota;
+                totalRegistros += 1;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+        // Actualizar sumatoria de importe de cuotas y total de registros
+        document.querySelector('tfoot th:nth-child(2)').innerText = totalImporteCuotas.toLocaleString('es-PY', {style: 'currency', currency: 'PYG'});
+        document.querySelector('tfoot th:nth-child(4)').innerText = 'Total Registros: ' + totalRegistros;
+    }
+</script>
+{% endblock %}

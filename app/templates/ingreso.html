@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Registrar Ingreso
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Registrar Ingreso</h2>
+    
+    <form method="POST" action="">
+        <div class="form-group">
+            <label for="concepto">Concepto</label>
+            <select id="concepto" name="concepto" class="form-control" required>
+                {% for concepto in conceptos %}
+                <option value="{{ concepto.id }}">{{ concepto.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="descripcion">Descripcion</label>
+            <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+        </div>
+        <div class="form-group">
+            <label for="importe">Importe</label>
+            <input type="number" id="importe" name="importe" class="form-control" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="moneda">Moneda</label>
+            <select id="moneda" name="moneda" class="form-control" required>
+                <option value="PYG">Guaraníes</option>
+                <option value="USD">Dólares</option>
+            </select>
+        </div>
+        <div class="form-group" id="tasa-cambio-group">
+            <label for="tasa_cambio">Tasa de Cambio</label>
+            <input type="number" id="tasa_cambio" name="tasa_cambio" class="form-control" step="0.01" value="1.0">
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar Ingreso</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('moneda').addEventListener('change', function() {
+        var tasaCambioGroup = document.getElementById('tasa-cambio-group');
+        if (this.value === 'PYG') {
+            tasaCambioGroup.style.display = 'none';
+        } else {
+            tasaCambioGroup.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

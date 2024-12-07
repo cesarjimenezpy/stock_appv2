@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Gestionar Cliente
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Crear Nuevo Cliente</h2>
+    
+    <form method="POST" action="{{ url_for('crear_cliente') }}" onsubmit="return validarFormulario();">
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="apellido">Apellido</label>
+            <input type="text" class="form-control" id="apellido" name="apellido" required>
+        </div>
+        <div class="form-group">
+            <label for="direccion">Dirección</label>
+            <input type="text" class="form-control" id="direccion" name="direccion" required>
+        </div>
+        <div class="form-group">
+            <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
+        </div>
+        <div class="form-group">
+            <label for="numero_documento">Número de Documento</label>
+            <input type="text" class="form-control" id="numero_documento" name="numero_documento" required>
+        </div>
+        <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" name="telefono">
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Cliente</button>
+    </form>
+    
+    <a href="{{ url_for('gestionar_cliente') }}" class="btn btn-secondary mt-3">Volver a Gestión de Clientes</a>
+</div>
+<script>
+    function validarFormulario() {
+        const fechaNacimiento = document.getElementById('fecha_nacimiento').value;
+        if (new Date(fechaNacimiento) >= new Date()) {
+            alert('La fecha de nacimiento debe ser anterior a la fecha actual.');
+            return false;
+        }
+        return true;
+    }
+</script>
+{% endblock %}
+<!-- <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> -->

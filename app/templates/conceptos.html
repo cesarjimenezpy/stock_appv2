@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Gestión de Conceptos
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Gestión de Conceptos</h2>
+    
+    <form method="POST" action="">
+        <div class="form-group">
+            <label for="nombre">Nombre del Concepto</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo" class="form-control" required>
+                <option value="ingreso">Ingreso</option>
+                <option value="egreso">Egreso</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Concepto</button>
+    </form>
+    
+    <h3 class="mt-4">Conceptos Existentes</h3>
+    <ul>
+        {% for concepto in conceptos %}
+        <li>{{ concepto.nombre }} ({{ concepto.tipo }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
