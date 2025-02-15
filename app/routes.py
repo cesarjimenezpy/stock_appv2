@@ -12,15 +12,36 @@ import io
 #from pyexcel_ods3 import save_data
 
 @current_app.route('/login', methods=['GET', 'POST'])
+@current_app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('index'))
-    return render_template('login.html')
+    try:
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+
+            user = User.query.filter_by(username=username).first()
+
+            if user and check_password_hash(user.password, password):
+                login_user(user)
+                return redirect(url_for('index'))
+            else:  # Mensaje para credenciales inválidas
+                flash('Credenciales inválidas. Por favor, inténtalo de nuevo.', 'danger') # Usando flash
+
+        return render_template('login.html')
+
+    except Exception as e:  # Captura cualquier excepción no controlada
+        error_message = str(e)  # Convierte el error a string
+
+        # Dos opciones para mostrar el error:
+
+        # 1. Mostrar mensaje flash en la página (recomendado para usuarios):
+        flash(f'Ocurrió un error: {error_message}', 'danger')  # Flash message
+        return render_template('login.html')  # Renderiza la página de login para que el usuario vea el mensaje
+
+        # 2. Imprimir en la consola (útil para desarrollo y depuración):
+        print(f"Error en la ruta /login: {error_message}") # Imprime en la consola del servidor
+        # También puedes usar current_app.logger.error(f"Error en /login: {error_message}") para un mejor manejo de logs
+        return render_template('login.html') # O podrías redirigir a una página de error genérica si lo deseas
 
 @current_app.route('/logout')
 @login_required
