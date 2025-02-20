@@ -16,8 +16,8 @@ def create_app():
     login_manager = LoginManager()
     app.config.from_object(Config)
     # Configuración de LoginManager
-    login_manager.init_app(app)
-    login_manager.login_view = 'login'  # Nombre de la vista para el login
+    # login_manager.init_app(app)
+    # login_manager.login_view = 'login'  # Nombre de la vista para el login
     
     # Inicializar extensiones
     db.init_app(app)
