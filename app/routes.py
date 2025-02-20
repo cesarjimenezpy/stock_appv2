@@ -12,50 +12,29 @@ import io
 #from pyexcel_ods3 import save_data
 
 @current_app.route('/login', methods=['GET', 'POST'])
-@current_app.route('/login', methods=['GET', 'POST'])
 def login():
-    try:
-        if request.method == 'POST':
-            username = request.form['username']
-            password = request.form['password']
-
-            user = User.query.filter_by(username=username).first()
-
-            if user and check_password_hash(user.password, password):
-                login_user(user)
-                return redirect(url_for('index'))
-            else:  # Mensaje para credenciales inválidas
-                flash('Credenciales inválidas. Por favor, inténtalo de nuevo.', 'danger') # Usando flash
-
-        return render_template('login.html')
-
-    except Exception as e:  # Captura cualquier excepción no controlada
-        error_message = str(e)  # Convierte el error a string
-
-        # Dos opciones para mostrar el error:
-
-        # 1. Mostrar mensaje flash en la página (recomendado para usuarios):
-        flash(f'Ocurrió un error: {error_message}', 'danger')  # Flash message
-        return render_template('login.html')  # Renderiza la página de login para que el usuario vea el mensaje
-
-        # 2. Imprimir en la consola (útil para desarrollo y depuración):
-        print(f"Error en la ruta /login: {error_message}") # Imprime en la consola del servidor
-        # También puedes usar current_app.logger.error(f"Error en /login: {error_message}") para un mejor manejo de logs
-        return render_template('login.html') # O podrías redirigir a una página de error genérica si lo deseas
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('index'))
+    return render_template('login.html')
 
 @current_app.route('/logout')
-@login_required
+#@login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 @current_app.route('/')
-@login_required
+#@login_required
 def index():
     productos = Producto.query.all()
     return render_template('index.html', productos=productos)
 
 @current_app.route('/producto/nuevo', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def nuevo_producto():
     if request.method == 'POST':
         try:
@@ -115,19 +94,19 @@ def nuevo_producto():
     return render_template('nuevo_producto.html', marcas=marcas, modelos=modelos)
 
 @current_app.route('/informes_stock')
-@login_required
+#@login_required
 def informes_stock():
     productos = Producto.query.all()
     return render_template('informes_stock.html', productos=productos)
 
 @current_app.route('/estado_cuentas_clientes')
-@login_required
+#@login_required
 def estado_cuentas_clientes():
     clientes = Cliente.query.all()
     return render_template('estado_cuentas_clientes.html', clientes=clientes)
 
 @current_app.route('/marca/nueva', methods=['POST'])
-@login_required
+#@login_required
 def nueva_marca():
     nombre = request.form.get('nombre')
     marca = Marca(nombre=nombre)
@@ -136,7 +115,7 @@ def nueva_marca():
     return redirect(url_for('nuevo_producto'))
 
 @current_app.route('/modelo/nuevo', methods=['POST'])
-@login_required
+#@login_required
 def nuevo_modelo():
     nombre = request.form.get('nombre')
     marca_id = request.form.get('marca_id')
@@ -146,7 +125,7 @@ def nuevo_modelo():
     return redirect(url_for('nuevo_producto'))
 
 @current_app.route('/crear_cliente', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def crear_cliente():
     if request.method=="POST":
         try:
@@ -189,7 +168,7 @@ def calcular_dias_atraso(venta):
 def obtener_valor_o_cero(valor):
     return float(valor) if valor is not None else 0.0
 @current_app.route('/consultar_ventas')
-@login_required
+#@login_required
 def consultar_ventas():
     ventas = Venta.query.order_by(Venta.fecha).all()
     for venta in ventas:
@@ -209,7 +188,7 @@ def consultar_ventas():
     return render_template('consultar_ventas.html', ventas=ventas)
 
 @current_app.route('/venta/nueva', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def nueva_venta():
     cliente_id = request.args.get('cliente_id')  # Obtener el ID del cliente si se pasa como parámetro
     cliente = None
@@ -319,7 +298,7 @@ def nueva_venta():
     #return render_template('nueva_venta.html', productos=productos, clientes=clientes)
 
 @current_app.route('/consultar_cuotas', methods=['GET'])
-@login_required
+#@login_required
 def consultar_cuotas():
     # Obtener todas las cuotas y ordenarlas por fecha de vencimiento
     cuotas = Cuota.query.join(Venta).order_by(Cuota.fecha_vencimiento).all()
@@ -327,7 +306,7 @@ def consultar_cuotas():
     # Renderizar el template con el listado completo de cuotas
     return render_template('consultar_cuotas.html', cuotas=cuotas, current_time=current_time)
 @current_app.route('/producto/editar/<int:producto_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def editar_producto(producto_id):
     producto = Producto.query.get_or_404(producto_id)
     marcas = Marca.query.all()
@@ -387,7 +366,7 @@ def editar_producto(producto_id):
     else:
         return render_template('nuevo_producto.html', producto=producto, marcas=marcas, modelos=modelos)
 @current_app.route('/buscar_producto', methods=['GET'])
-@login_required
+#@login_required
 def buscar_producto():
     numero_chasis = request.args.get('numero_chasis')
     if not numero_chasis:
@@ -408,7 +387,7 @@ def buscar_producto():
     else:
         return jsonify({'error': 'Producto no encontrado'}), 404
 @current_app.route('/producto/eliminar/<int:producto_id>', methods=['POST'])
-@login_required
+#@login_required
 def eliminar_producto(producto_id):
     producto = Producto.query.get_or_404(producto_id)
    
@@ -435,7 +414,7 @@ def eliminar_producto(producto_id):
     
     return redirect(url_for('index'))
 @current_app.route('/cliente/gestionar', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def gestionar_cliente():
     if request.method == 'POST':
         numero_documento = request.form.get('numero_documento')
@@ -497,7 +476,7 @@ def gestionar_cliente():
 
     return render_template('gestionar_cliente.html', cliente=cliente, ventas=ventas, seguimientos_venta=seguimientos_venta, seguimientos_cobranza=seguimientos_cobranza)
 @current_app.route('/registrar_seguimiento_venta/<int:cliente_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def registrar_seguimiento_venta(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
 
@@ -565,7 +544,7 @@ def registrar_seguimiento_venta(cliente_id):
 
     return render_template('registrar_seguimiento_venta.html', cliente=cliente)
 @current_app.route('/seguimiento_cobranza/<int:cliente_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def registrar_seguimiento_cobranza(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
     
@@ -597,7 +576,7 @@ def registrar_seguimiento_cobranza(cliente_id):
     # Renderizar el formulario con el cliente
     return render_template('registrar_seguimiento_cobranza.html', cliente=cliente)
 @current_app.route('/registrar_cobranza/<int:cliente_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def registrar_cobranza(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
 
@@ -620,14 +599,14 @@ def registrar_cobranza(cliente_id):
 
     return render_template('registrar_seguimiento_venta.html', cliente=cliente)
 @current_app.route('/gestionar_cuotas/<int:venta_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def gestionar_cuotas(venta_id):
     venta = Venta.query.get_or_404(venta_id)
     cuotas_ordenadas = sorted(venta.cuotas, key=lambda c: c.fecha_vencimiento)
-    total_cuotas = len(cuotas_ordenadas)
-    for index, cuota in enumerate(cuotas_ordenadas):
+    # total_cuotas = len(cuotas_ordenadas)
+    # for index, cuota in enumerate(cuotas_ordenadas):
 
-        cuota.numero_pagare = f"{index + 1}/{total_cuotas}"
+    #     cuota.numero_pagare = f"{index + 1}/{total_cuotas}"
     if not venta.cuotas:
         flash('La venta no tiene cuotas asociadas.', 'info')
         
@@ -689,7 +668,7 @@ def gestionar_cuotas(venta_id):
 
     return render_template('gestionar_cuotas.html', venta=venta)
 @current_app.route('/editar_seguimiento_venta/<int:seguimiento_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def editar_seguimiento_venta(seguimiento_id):
     seguimiento = SeguimientoVenta.query.get_or_404(seguimiento_id)
     
@@ -708,7 +687,7 @@ def editar_seguimiento_venta(seguimiento_id):
 
 # Ruta para eliminar un seguimiento de venta
 @current_app.route('/eliminar_seguimiento_venta/<int:seguimiento_id>', methods=['POST'])
-@login_required
+#@login_required
 def eliminar_seguimiento_venta(seguimiento_id):
     seguimiento = SeguimientoVenta.query.get_or_404(seguimiento_id)
     cliente_id = seguimiento.cliente_id
@@ -724,7 +703,7 @@ def eliminar_seguimiento_venta(seguimiento_id):
 
 # Ruta para editar un seguimiento de cobranza
 @current_app.route('/editar_seguimiento_cobranza/<int:seguimiento_id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def editar_seguimiento_cobranza(seguimiento_id):
     seguimiento = SeguimientoCobranza.query.get_or_404(seguimiento_id)
     
@@ -743,7 +722,7 @@ def editar_seguimiento_cobranza(seguimiento_id):
 
 # Ruta para eliminar un seguimiento de cobranza
 @current_app.route('/eliminar_seguimiento_cobranza/<int:seguimiento_id>', methods=['POST'])
-@login_required
+#@login_required
 def eliminar_seguimiento_cobranza(seguimiento_id):
     seguimiento = SeguimientoCobranza.query.get_or_404(seguimiento_id)
     cliente_id = seguimiento.cliente_id
@@ -757,7 +736,7 @@ def eliminar_seguimiento_cobranza(seguimiento_id):
     
     return redirect(url_for('gestionar_cliente', cliente_id=cliente_id))
 @current_app.route('/conceptos', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def manage_concepts():
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -772,7 +751,7 @@ def manage_concepts():
     return render_template('conceptos.html', conceptos=conceptos)
 
 @current_app.route('/ingreso', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def register_income():
     if request.method == 'POST':
         concepto_id = request.form['concepto']
@@ -792,7 +771,7 @@ def register_income():
     return render_template('ingreso.html', conceptos=conceptos)
 
 @current_app.route('/egreso', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def register_expense():
     if request.method == 'POST':
         concepto_id = request.form['concepto']
@@ -812,7 +791,7 @@ def register_expense():
     return render_template('egreso.html', conceptos=conceptos)
 
 @current_app.route('/flujo_caja', methods=['GET'])
-@login_required
+#@login_required
 def cash_flow():
     # Obtén los parámetros del formulario de filtro
     mes = request.args.get('mes', type=int)
@@ -910,7 +889,7 @@ def cash_flow():
 
     return render_template('flujo_caja.html', flujo=flujo)
 @current_app.route('/consultar_seguimientos_venta')
-@login_required
+#@login_required
 def consultar_seguimientos_venta():
     mes_actual = datetime.now().month
     año_actual = datetime.now().year
@@ -936,7 +915,7 @@ def eliminar_venta(venta_id):
 
     return redirect(url_for('consultar_ventas'))
 @current_app.route('/exportar_datos', methods=['POST'])
-@login_required
+#@login_required
 def exportar_datos():
     formato = request.form.get('formato', 'xls')
 
